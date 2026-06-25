@@ -365,6 +365,22 @@
 </div>
 <!-- Swiper JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
-<script src="script.js"></script>
+<script src="script.js">
+</script>
+  <script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.key === 'u') ||
+      (e.ctrlKey && e.key === 's') ||
+      (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+      (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+      (e.ctrlKey && e.shiftKey && e.key === 'C')
+    ) {
+      e.preventDefault();
+    }
+  });
+</script>
 </body>
 </html>
