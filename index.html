@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineVault — Cinema Redefined</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="loading">
+<!-- <div class="main-container"> -->
+  
+<!-- PAGE LOADER -->
+<div class="page-loader" id="pageLoader">
+  <div class="loader-logo">◈ CineVault</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+</div>
+
+<!-- GRAIN OVERLAY -->
+<div class="grain"></div>
+
+<!-- ONBOARDING OVERLAY -->
+<div id="onboardingOverlay" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:all;">
+  <div id="onboardingMask" style="position:absolute;inset:0;"></div>
+  <div id="onboardingSpotlight"></div>
+  <div id="onboardingCard"></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo" onclick="showPage('home')">
+    <span class="logo-icon">◈</span>
+    <span class="logo-text">CineVault</span>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" data-page="home"      onclick="showPage('home');closeMobileMenu()">Discover</a></li>
+    <li><a href="#" data-page="movies"    onclick="showPage('movies');closeMobileMenu()">Films</a></li>
+    <li><a href="#" data-page="free"      onclick="showPage('free');closeMobileMenu()">Free Cinema</a></li>
+    <li><a href="#" data-page="watchlist" onclick="showPage('watchlist');closeMobileMenu()">My List</a></li>
+  </ul>
+  <div class="nav-actions">
+    <!-- Desktop search -->
+    <div class="search-wrap desktop-only">
+      <input type="text" id="searchInput" placeholder="Search films..."/>
+      <button class="search-btn" onclick="searchMovies()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+    <!-- Desktop auth buttons (hidden when logged in) -->
+    <div id="authBtns" class="auth-btns desktop-only">
+      <button class="btn-ghost" onclick="openAuth('login')">Sign In</button>
+      <button class="btn-primary" onclick="openAuth('signup')">Join Free</button>
+    </div>
+    <!-- Avatar — shown when logged in (desktop + mobile) -->
+    <div id="userMenu" class="user-menu" style="display:none">
+      <div class="avatar" onclick="showPage('profile')" id="avatarEl">U</div>
+    </div>
+    <!-- Mobile search icon -->
+    <button class="mobile-search-btn" id="mobileSearchBtn" onclick="openMobileSearch()" aria-label="Search">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+    <!-- Hamburger -->
+    <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE SEARCH BAR (slides in from right on mobile) -->
+<div class="mobile-search-bar" id="mobileSearchBar">
+  <input type="text" id="mobileSearchInput" placeholder="Search films..." autocomplete="off"/>
+  <button class="mobile-search-close" onclick="closeMobileSearch()">✕</button>
+</div>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-header">
+    <span class="logo-icon">◈</span>
+    <span class="logo-text">CineVault</span>
+    <button onclick="closeMobileMenu()">✕</button>
+  </div>
+  <ul class="drawer-links">
+    <li onclick="showPage('home');closeMobileMenu()">🎬 Discover</li>
+    <li onclick="showPage('movies');closeMobileMenu()">🎥 Films</li>
+    <li onclick="showPage('free');closeMobileMenu()">🆓 Free Cinema</li>
+    <li onclick="showPage('watchlist');closeMobileMenu()">📋 My List</li>
+    <li onclick="showPage('profile');closeMobileMenu()">👤 Profile</li>
+  </ul>
+  <div class="drawer-auth">
+    <div id="drawerAuthBtns">
+      <button class="btn-ghost full" onclick="openAuth('login');closeMobileMenu()">Sign In</button>
+      <button class="btn-primary full" onclick="openAuth('signup');closeMobileMenu()" style="margin-top:10px">Join Free</button>
+    </div>
+    <div id="drawerUserInfo" style="display:none">
+      <div class="drawer-user">
+        <div class="avatar" id="drawerAvatarEl">U</div>
+        <div>
+          <div id="drawerUserName" style="font-weight:600;font-size:14px">—</div>
+          <div style="font-size:12px;color:var(--text-mute)">Member</div>
+        </div>
+      </div>
+      <button class="btn-logout full" onclick="logout();closeMobileMenu()" style="margin-top:14px;width:100%">Sign Out</button>
+    </div>
+  </div>
+</div>
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeMobileMenu()"></div>
+
+<!-- ========== HOME PAGE ========== -->
+<div id="homePage" class="page active">
+
+  <!-- HERO SWIPER -->
+  <section class="hero-section" id="heroSection">
+    <div class="hero-particles" id="heroParticles"></div>
+
+    <div class="swiper heroSwiper">
+      <div class="swiper-wrapper" id="heroSwiperWrapper"></div>
+      <div class="swiper-pagination heroSwiper-pagination"></div>
+      <div class="swiper-button-prev hero-prev"></div>
+      <div class="swiper-button-next hero-next"></div>
+    </div>
+  </section>
+
+  <!-- TRENDING SWIPER RAIL -->
+  <section class="rail-section reveal">
+    <div class="rail-header">
+      <h2 class="rail-title">🔥 Trending This Week</h2>
+      <a href="#" class="rail-more" onclick="showPage('movies')">See All →</a>
+    </div>
+    <div class="swiper movieSwiper" id="trendingSwiper">
+      <div class="swiper-wrapper" id="trendingWrapper"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
+  </section>
+
+  <!-- WATCH FREE NOW SECTION -->
+  <section class="watch-free-section reveal" id="watchFreeSection">
+    <div class="wf-header">
+      <div class="wf-header-left">
+        <span class="wf-badge">▶ FREE NOW</span>
+        <h2 class="wf-title">Watch Free Right Now</h2>
+        <p class="wf-sub">Hand-picked movies available 100% free — click to watch instantly</p>
+      </div>
+      <button class="btn-outline" onclick="showPage('free')">Full Library →</button>
+    </div>
+    <div class="wf-grid" id="watchFreeGrid"></div>
+  </section>
+
+  <!-- FREE SPOTLIGHT SWIPER -->
+  <section class="spotlight-section reveal">
+    <div class="spotlight-header">
+      <div>
+        <span class="spotlight-badge">FREE TO WATCH</span>
+        <h2 class="spotlight-title">Public Cinema</h2>
+        <p class="spotlight-sub">Classic films — watch right now, no subscription</p>
+      </div>
+      <button class="btn-outline" onclick="showPage('free')">Browse All →</button>
+    </div>
+    <div class="swiper movieSwiper" id="freeSwiper">
+      <div class="swiper-wrapper" id="freeWrapper"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
+  </section>
+
+  <!-- POPULAR SWIPER -->
+  <section class="rail-section reveal">
+    <div class="rail-header">
+      <h2 class="rail-title">⭐ Most Popular</h2>
+    </div>
+    <div class="swiper movieSwiper" id="popularSwiper">
+      <div class="swiper-wrapper" id="popularWrapper"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
+  </section>
+
+  <!-- TOP RATED SWIPER -->
+  <section class="rail-section reveal">
+    <div class="rail-header">
+      <h2 class="rail-title">🏆 All-Time Greatest</h2>
+    </div>
+    <div class="swiper movieSwiper" id="topRatedSwiper">
+      <div class="swiper-wrapper" id="topRatedWrapper"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ========== FILMS PAGE ========== -->
+<div id="moviesPage" class="page">
+  <div class="browse-header reveal">
+    <h1>Browse Films</h1>
+    <div class="genre-bar" id="genreBar"></div>
+  </div>
+  <div class="cards-grid" id="browseGrid"></div>
+  <!-- Infinite scroll sentinel -->
+  <div id="infiniteSentinel" style="height:1px"></div>
+  <div id="infiniteLoader" class="infinite-loader" style="display:none">
+    <div class="spinner"></div> Loading more films…
+  </div>
+</div>
+
+<!-- ========== FREE PAGE ========== -->
+<div id="freePage" class="page">
+  <div class="browse-header reveal">
+    <h1>🎬 Free Cinema</h1>
+    <p class="browse-sub">1000+ movies — completely free, click to watch instantly on legal platforms</p>
+    <div class="genre-bar" id="freeGenreBar"></div>
+  </div>
+  <div class="cards-grid" id="freeGrid"></div>
+  <div id="freeSentinel" style="height:1px"></div>
+  <div id="freeLoader" class="infinite-loader" style="display:none">
+    <div class="spinner"></div> Loading more free movies…
+  </div>
+</div>
+
+<!-- ========== WATCHLIST PAGE ========== -->
+<div id="watchlistPage" class="page">
+  <div class="browse-header reveal"><h1>My List</h1></div>
+  <div class="cards-grid" id="watchlistGrid"></div>
+  <div id="emptyList" class="empty-state" style="display:none">
+    <div class="empty-icon">◈</div>
+    <h3>Your list is empty</h3>
+    <p>Add films you want to watch later</p>
+    <button onclick="showPage('home')">Discover Films</button>
+  </div>
+</div>
+
+<!-- ========== PROFILE PAGE ========== -->
+<div id="profilePage" class="page">
+  <div class="profile-wrap">
+    <div class="profile-card reveal">
+      <div class="profile-avatar-lg" id="profileAvLg">U</div>
+      <h2 id="profileNameEl">—</h2>
+      <p id="profileEmailEl" class="profile-email">—</p>
+      <div class="profile-chips">
+        <div class="chip"><span id="wlCountEl">0</span><label>Saved</label></div>
+        <div class="chip"><span id="reviewCountEl">0</span><label>Reviews</label></div>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SEARCH PAGE ========== -->
+<div id="searchPage" class="page">
+  <div class="browse-header reveal"><h1>Results for "<span id="searchQueryEl"></span>"</h1></div>
+  <div class="cards-grid" id="searchGrid"></div>
+</div>
+
+<!-- ========== VIDEO PLAYER ========== -->
+<div class="player-overlay" id="playerOverlay">
+  <div class="player-wrap">
+    <div class="player-topbar">
+      <div class="player-title-bar">
+        <span id="playerMovieTitle">—</span>
+        <span class="player-source-tag" id="playerSourceTag">Archive.org</span>
+      </div>
+      <button class="player-close" onclick="closePlayer()">✕</button>
+    </div>
+    <div id="archivePlayerArea" style="display:none">
+      <video id="archiveVideo" controls controlsList="nodownload">
+        <source id="archiveSource" src="" type="video/mp4"/>
+      </video>
+    </div>
+    <div id="youtubePlayerArea" style="display:none">
+      <iframe id="ytFrame" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DETAIL MODAL ========== -->
+<div class="modal-overlay" id="detailModal" onclick="closeDetailModal()">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeDetailModal()">✕</button>
+    <div class="detail-backdrop" id="detailBackdrop"></div>
+    <div class="detail-body">
+      <div class="detail-poster-col">
+        <img id="detailPoster" src="" alt=""/>
+        <button class="btn-primary detail-play-btn" id="detailPlayBtn">▶ Trailer</button>
+        <button class="btn-watch-online" id="detailWatchBtn">🎬 Watch Online Free</button>
+        <button class="btn-ghost detail-list-btn" id="detailListBtn">+ My List</button>
+      </div>
+      <div class="detail-info-col">
+        <h1 id="detailTitle"></h1>
+        <!-- FREE AVAILABILITY BADGE -->
+        <div id="freeAvailBadge" class="free-avail-badge free-avail-checking">
+          <span class="fab-dot"></span>
+          <span class="fab-text">Checking availability…</span>
+        </div>
+        <div class="detail-meta-row">
+          <span class="meta-pill gold" id="detailRating">★ —</span>
+          <span class="meta-pill" id="detailYear">—</span>
+          <span class="meta-pill" id="detailRuntime">—</span>
+          <span class="meta-pill" id="detailLang">—</span>
+        </div>
+        <div class="detail-genres" id="detailGenres"></div>
+        <p class="detail-overview" id="detailOverview"></p>
+        <div class="detail-cast-section">
+          <h4>Cast</h4>
+          <div class="cast-scroll" id="detailCast"></div>
+        </div>
+        <div class="detail-reviews">
+          <h4>Reviews</h4>
+          <div id="detailReviewsList"></div>
+          <div id="writeReviewArea" style="display:none" class="write-review">
+            <textarea id="reviewTextarea" placeholder="Share your thoughts..."></textarea>
+            <div class="star-row" id="starRow">
+              <span onclick="pickStar(1)">★</span><span onclick="pickStar(2)">★</span>
+              <span onclick="pickStar(3)">★</span><span onclick="pickStar(4)">★</span>
+              <span onclick="pickStar(5)">★</span>
+            </div>
+            <button class="btn-primary" onclick="submitReview()">Post Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== AUTH MODAL ========== -->
+<div class="modal-overlay" id="authModal" onclick="closeAuth()">
+  <div class="auth-card" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeAuth()">✕</button>
+    <div class="auth-logo">◈ CineVault</div>
+    <div id="loginForm">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Sign in to your account</p>
+      <input type="text" id="li-user" placeholder="Username" class="auth-input"/>
+      <input type="password" id="li-pass" placeholder="Password" class="auth-input"/>
+      <button class="btn-primary full" onclick="doLogin()">Sign In</button>
+      <p class="auth-toggle">New here? <a href="#" onclick="switchAuth('signup')">Create account</a></p>
+      <div class="auth-err" id="li-err"></div>
+    </div>
+    <div id="signupForm" style="display:none">
+      <h2>Join CineVault</h2>
+      <p class="auth-sub">Create your free account</p>
+      <input type="text" id="su-name" placeholder="Full Name" class="auth-input"/>
+      <input type="text" id="su-user" placeholder="Username" class="auth-input"/>
+      <input type="email" id="su-email" placeholder="Email" class="auth-input"/>
+      <input type="password" id="su-pass" placeholder="Password (min 6)" class="auth-input"/>
+      <button class="btn-primary full" onclick="doSignup()">Create Account</button>
+      <p class="auth-toggle">Have account? <a href="#" onclick="switchAuth('login')">Sign in</a></p>
+      <div class="auth-err" id="su-err"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="copy-claim" style="display: flex; justify-content: center; align-items: center; text-align: center; padding: 15px ; width: 100%; background-color:#0c0c0c"> 
+  <P style="color:#9e9e9e; font-size: 24px; font-family: 'Bebas Neue';">Copy Claim made by <a href="https://www.instagram.com/talha_official13/" style="display: inline-block; font-weight: 500; text-align: center; color: aliceblue;">@Talha RJP</a> 2026</P>
+</div>
+
+</div>
+<!-- Swiper JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
